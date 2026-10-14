@@ -132,6 +132,20 @@ uv run python -I tools/scan_library.py ~/Music/your-library build/Firmware-25.6.
   오도록 하세요.
 - 비트맵 글꼴 형식은 iPodWizard의 `Font.h`를 따릅니다.
 
+## 도움 요청: 더 많은 iPod와 펌웨어 버전 지원
+
+지금까지는 **펌웨어 1.3, Mac 포맷의 iPod Video 5.5G** 한 대에서만 테스트했습니다. 다른 기기가 있다면 더 많은
+사람이 쓸 수 있도록 도와주세요:
+
+- **테스트 보고:** 펌웨어 1.3의 5G(30/60GB)나 Windows 포맷 iPod. 무엇이 되고 안 되는지, 가능하면 사진과
+  함께 알려 주세요.
+- **다른 펌웨어 버전:** 1.2.x 이전의 5G 펌웨어는 내부 배치가 다를 수 있습니다.
+- **다른 기종:** nano와 classic은 다른 펌웨어 형식을 쓸 수 있습니다. 글꼴이 어떻게 저장되는지 분석하는 것만으로도
+  좋은 출발점이 됩니다.
+
+[CONTRIBUTING.md](CONTRIBUTING.md#porting-to-another-ipod-or-firmware)(영어)에 이 기종과 버전에 묶여 있는
+부분을 정리해 두었고, 포팅 보고용 issue 템플릿도 있습니다.
+
 ## 감사의 말
 
 - 가사 글리프는 TakWolf의 [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)(OFL 1.1)를

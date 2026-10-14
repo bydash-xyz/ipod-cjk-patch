@@ -134,6 +134,20 @@ uv run python -I tools/scan_library.py ~/Music/your-library build/Firmware-25.6.
   各文字はひとつのフォントからだけ供給するようにします。
 - ビットマップフォントの形式は iPodWizard の `Font.h` に基づいています。
 
+## 協力募集：ほかの iPod とファームウェアへの対応
+
+現時点で動作確認できているのは、**ファームウェア 1.3・Mac フォーマットの iPod Video 5.5G** 1 台だけです。
+ほかの機種をお持ちなら、より多くの人が使えるようにする手助けをお願いします：
+
+- **動作報告：** ファームウェア 1.3 の 5G（30/60GB）や、Windows フォーマットの iPod。うまくいく点・いかない
+  点を、できれば写真付きで教えてください。
+- **ほかのファームウェア：** 1.2.x 以前の 5G 用ファームウェアは内部の配置が異なる可能性があります。
+- **ほかの機種：** nano や classic は別のファームウェア形式かもしれません。フォントの格納方法を調べるだけでも、
+  有益な第一歩になります。
+
+[CONTRIBUTING.md](CONTRIBUTING.md#porting-to-another-ipod-or-firmware)（英語）に、この機種・バージョンに依存
+している箇所をまとめています。移植報告用の issue テンプレートもあります。
+
 ## 謝辞
 
 - 歌詞のグリフは TakWolf 氏の [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)（OFL 1.1）を

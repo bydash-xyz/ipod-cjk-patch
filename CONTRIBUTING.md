@@ -1,7 +1,8 @@
 # Contributing to iPod CJK Patch
 
-Thanks for helping! Bug reports, missing characters, tests on other iPods and translations are all
-welcome.
+Thanks for helping! Bug reports, missing characters, translations, and especially **tests and
+ports for other iPods and firmware versions** are all welcome (see
+[Porting](#porting-to-another-ipod-or-firmware)).
 
 ## A human summary is required
 
@@ -39,6 +40,36 @@ If a character doesn't show up, or shows up small in menus:
 
 The lyric fonts have a fixed size budget (see "Firmware notes" in the README). The build will
 fail with a clear error if a change doesn't fit.
+
+## Porting to another iPod or firmware
+
+This is the most valuable kind of help. Only one iPod has been tested so far: an iPod Video
+5.5G with firmware 1.3 (`iPod_25.1.3.ipsw`), Mac-formatted. These are the parts tied to that
+setup:
+
+| What | Where | Notes |
+|---|---|---|
+| Stock IPSW URL and hashes | `IPSW_*` in `tools/build.py` | One pinned firmware; a port adds another |
+| Firmware directory at `0x4200`, osos data at `0x5000` | `tools/ipodfw.py`, `tools/build_unified.py` | `build_unified.py` asserts the osos layout |
+| Font registry address `0x6a6480–0x6a6660` | `REGISTRY` in `tools/build_unified.py`, `tools/render_preview.py` | Version-specific; ideally found by searching instead of hardcoded |
+| 12px CJK font families (AppleGothic, AppleLiGothicMedium, Hei, Osaka) | `FAMILIES` in `tools/build_unified.py` | List them on your firmware with `tools/pixofont.py <firmware>` |
+| Glyph strip limit 31836px | `STRIP_LIMIT` in `tools/build_unified.py` | Measured on 1.3; likely the same on other 5G firmware |
+| Menu font `/Resources/Fonts/CJK.ttf` (18px EBDT) | `tools/build.py`, `tools/extend_cjk_ttf.py` | |
+| Partition layout: firmware on `s2`, music on `s3` (Mac-formatted) | `tools/backup_and_flash.sh` | Windows-formatted iPods use an MBR layout |
+| On-device image offset `devOffset + 0x200` | `tools/install_firmware.py` | Read from the device's own directory, so it may already work |
+
+A good way to start:
+
+1. Open a **Support another iPod / firmware** issue with your model, capacity, formatting and
+   firmware version.
+2. Run `uv run python -I tools/pixofont.py <your Firmware file>` and attach the output. It shows
+   whether the font format and families match.
+3. For the flash path, attach `diskutil list` output for the iPod. **Don't flash** a build for
+   your model until the port has been reviewed, and keep a partition backup.
+
+Ports should keep the existing safety checks: verify the stock image byte for byte before
+writing, write only changed sectors, and read back to verify. Add the new firmware as an extra
+pinned target rather than replacing 1.3.
 
 ## Development setup
 

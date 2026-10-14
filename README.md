@@ -137,6 +137,20 @@ that exercise every case. Add the track to your library and check it on the iPod
   Give each character exactly one source font.
 - The bitmap font format follows iPodWizard's `Font.h`.
 
+## Help wanted: more iPods and firmware versions
+
+So far this has only been tested on one **iPod Video 5.5G with firmware 1.3, Mac-formatted**.
+If you have other hardware, you can help make it work for more people:
+
+- **Test reports:** a 5G (30/60GB) on 1.3, or a Windows-formatted iPod. Tell us what works and
+  what doesn't, ideally with photos.
+- **Other firmware versions:** 1.2.x and earlier 5G firmware probably lay things out differently.
+- **Other models:** nano and classic models may use other firmware formats. Even an analysis of how
+  their fonts are stored is a useful start.
+
+[CONTRIBUTING.md](CONTRIBUTING.md#porting-to-another-ipod-or-firmware) lists exactly which parts
+are tied to this model and version, and there's an issue template for porting reports.
+
 ## Contributing
 
 Issues and pull requests are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Coding agents

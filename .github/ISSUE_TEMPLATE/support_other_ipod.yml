@@ -1,0 +1,53 @@
+name: Support another iPod / firmware
+description: Test results or porting work for a model, firmware version or formatting not yet supported
+labels: [porting]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary (written by you)
+      description: >
+        At least one sentence in your own words, not AI-generated: what device you have and what
+        you tried or want to get working. Any language is fine. Issues without this are closed.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: iPod model and capacity
+      placeholder: e.g. iPod Video 5G 30GB (MA146)
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware version and IPSW name
+      placeholder: e.g. 1.3, iPod_25.1.3.ipsw
+    validations:
+      required: true
+  - type: dropdown
+    id: format
+    attributes:
+      label: Formatting
+      options:
+        - Mac (HFS+)
+        - Windows (FAT32)
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: pixofont
+    attributes:
+      label: pixofont.py output (optional)
+      description: "`uv run python -I tools/pixofont.py <Firmware file>`. Lists the firmware's bitmap fonts."
+      render: text
+  - type: textarea
+    id: diskutil
+    attributes:
+      label: diskutil list output for the iPod (optional)
+      render: text
+  - type: textarea
+    id: results
+    attributes:
+      label: What worked / what didn't
+      description: Build output, flash output, photos. Don't attach firmware images or backups.

@@ -122,6 +122,17 @@ uv run python -I tools/scan_library.py ~/Music/your-library build/Firmware-25.6.
 - 不要依赖固件的字体回退顺序，它并不按字体注册表顺序。让每个字只来自一个字体。
 - 点阵字体格式参考 iPodWizard 的 `Font.h`。
 
+## 欢迎参与：支持更多 iPod 和固件版本
+
+目前只在一台 **固件 1.3、Mac 格式的 iPod Video 5.5G** 上测试过。如果你有其他设备，欢迎帮忙让它支持更多人：
+
+- **测试反馈：** 固件 1.3 的 5G（30/60GB），或 Windows 格式的 iPod。告诉我们哪些正常、哪些不正常，最好附上照片。
+- **其他固件版本：** 1.2.x 及更早的 5G 固件，内部布局可能不同。
+- **其他机型：** nano 和 classic 可能使用不同的固件格式。哪怕只是分析清楚它们的字体存放方式，也是很有用的第一步。
+
+[CONTRIBUTING.md](CONTRIBUTING.md#porting-to-another-ipod-or-firmware)（英文）列出了哪些部分与当前机型和版本绑定，
+另有专门的移植报告 issue 模板。
+
 ## 致谢
 
 - 歌词字形来自 TakWolf 的 [Fusion Pixel Font](https://github.com/TakWolf/fusion-pixel-font)（OFL 1.1），它基于
