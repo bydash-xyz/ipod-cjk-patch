@@ -1,0 +1,44 @@
+name: Rendering problem or bug
+description: Text looks wrong on the iPod, or a tool fails
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary (written by you)
+      description: >
+        At least one sentence in your own words, not AI-generated: what you saw and what you
+        expected. Any language is fine. Issues without this are closed.
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: iPod model and formatting
+      placeholder: e.g. 5.5G 80GB, Mac-formatted
+    validations:
+      required: true
+  - type: dropdown
+    id: build
+    attributes:
+      label: Which build is on the iPod?
+      options:
+        - Released build (build.py said "matches the released build")
+        - Modified build
+        - Stock firmware (not patched yet)
+    validations:
+      required: true
+  - type: textarea
+    id: text
+    attributes:
+      label: Text that looks wrong
+      description: The exact title / artist / album or lyric line, copied as text.
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo of the screen
+      description: A sharp close-up. Rendering problems are often 1px. Don't attach firmware images or backups.
+  - type: textarea
+    id: details
+    attributes:
+      label: Other details
+      description: Logs, tool output, steps to reproduce. AI-assisted text is fine here.

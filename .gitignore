@@ -1,0 +1,21 @@
+# Apple firmware and anything derived from it -- copyrighted, never commit
+*.ipsw
+firmware/
+build/
+backups/
+*.img
+*.bin
+
+# personal data
+reports/
+test_media/
+library_report.json
+*.m4a
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+.DS_Store
+.ruff_cache/

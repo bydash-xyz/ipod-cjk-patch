@@ -1,0 +1,24 @@
+name: Missing characters
+description: Characters that are blank in lyrics or small in menus
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary (written by you)
+      description: >
+        At least one sentence in your own words, not AI-generated: where these characters
+        appear and what goes wrong. Any language is fine. Issues without this are closed.
+    validations:
+      required: true
+  - type: textarea
+    id: chars
+    attributes:
+      label: Characters
+      description: Paste the characters, and say whether they are in lyrics or in titles/artists/albums.
+    validations:
+      required: true
+  - type: textarea
+    id: scan
+    attributes:
+      label: scan_library.py output (optional)
+      render: text
