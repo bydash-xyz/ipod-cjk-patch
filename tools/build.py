@@ -6,7 +6,8 @@ Without --ipsw, the IPSW is downloaded from Apple. The Fusion Pixel 12px BDFs ar
 from the font's GitHub release. Both downloads happen once and are kept in the build dir, and
 each must match a pinned hash before anything is built. Writes to the build dir:
   iPod_25.1.3.ipsw          downloaded stock IPSW (if not given)
-  fusion-pixel/             the four 12px BDFs used for lyrics (zh_hans, zh_hant, ja, ko)
+  fusion-pixel/             the 12px BDFs used for lyrics: monospaced zh_hans, zh_hant, ja, ko
+                            (CJK) and proportional latin, zh_hans (Latin and symbols)
   stock/Firmware-25.6.3     stock firmware from the IPSW (the base for flashing)
   CJK.ttf                   extended menu font
   Firmware-25.6.3-cjk       the patched firmware
@@ -36,11 +37,15 @@ IPSW_SHA1 = '0f2dd984c5d56475bdf3c14b4bc7541b799f2c85'
 IPSW_SHA256 = '840b2480ad5b692c098cb772c3d2bf8f58bf37557788782b596ac01c27ecdc32'
 # Fusion Pixel Font (OFL), see third_party/fusion-pixel/README.md
 FUSION_VERSION = '2026.09.25'
-FUSION_URL = (f'https://github.com/TakWolf/fusion-pixel-font/releases/download/{FUSION_VERSION}/'
-              f'fusion-pixel-font-12px-monospaced-bdf-v{FUSION_VERSION}.zip')
-FUSION_SHA256 = 'd75f5262f108757edb0f47ee8e3d2dfdfbecfd94558faf5ffb0c06dc5866fb3b'
-FUSION_VARIANTS = ('zh_hans', 'zh_hant', 'ja', 'ko')
-EXPECTED_SHA256 = '4ac3e2e1b8e3e14ce3078d0fe3f0a8c9641e04f65228a552ad5038c37c3260a9'
+FUSION_RELEASE = f'https://github.com/TakWolf/fusion-pixel-font/releases/download/{FUSION_VERSION}/'
+# (asset spacing, its SHA256, variants used): monospaced for CJK, proportional for Latin/symbols
+FUSION_ASSETS = (
+    ('monospaced', 'd75f5262f108757edb0f47ee8e3d2dfdfbecfd94558faf5ffb0c06dc5866fb3b',
+     ('zh_hans', 'zh_hant', 'ja', 'ko')),
+    ('proportional', '7cae5ea83b46086f146002d194d46bbba70ec7264ac3a309219f5ad491626cef',
+     ('latin', 'zh_hans')),
+)
+EXPECTED_SHA256 = 'bf83fc2e3c38ba82da93f4f058783bfe9ef38899f6eb6dbf93fae567239b97e8'
 CJK_TTF = '/Resources/Fonts/CJK.ttf'
 
 
@@ -51,10 +56,6 @@ def digest(path, algo):
 
 def verified(path):
     return digest(path, 'sha1') == IPSW_SHA1 and digest(path, 'sha256') == IPSW_SHA256
-
-
-def fusion_ok(path):
-    return digest(path, 'sha256') == FUSION_SHA256
 
 
 def fetch(url, dst, ok):
@@ -72,15 +73,17 @@ def fetch(url, dst, ok):
 
 def fusion_fonts(out):
     """Extract the Fusion Pixel BDFs build_unified.py needs; returns their directory."""
-    zip_path = os.path.join(out, os.path.basename(FUSION_URL))
-    fetch(FUSION_URL, zip_path, fusion_ok)
     fdir = os.path.join(out, 'fusion-pixel')
     os.makedirs(fdir, exist_ok=True)
-    with zipfile.ZipFile(zip_path) as z:
-        for v in FUSION_VARIANTS:
-            name = f'fusion-pixel-12px-monospaced-{v}.bdf'
-            with open(os.path.join(fdir, name), 'wb') as f:
-                f.write(z.read(name))
+    for spacing, sha256, variants in FUSION_ASSETS:
+        asset = f'fusion-pixel-font-12px-{spacing}-bdf-v{FUSION_VERSION}.zip'
+        zip_path = os.path.join(out, asset)
+        fetch(FUSION_RELEASE + asset, zip_path, lambda p, sha256=sha256: digest(p, 'sha256') == sha256)
+        with zipfile.ZipFile(zip_path) as z:
+            for v in variants:
+                name = f'fusion-pixel-12px-{spacing}-{v}.bdf'
+                with open(os.path.join(fdir, name), 'wb') as f:
+                    f.write(z.read(name))
     return fdir
 
 

@@ -10,8 +10,9 @@ families. Whatever order the firmware checks fonts in, a CJK char now has exactl
 
 Fusion variant per char: Simplified (GB2312) -> zh_hans, else Traditional (Big5) -> zh_hant,
 kana / other JIS kanji -> ja, Hangul -> ko. Compatibility forms (e.g. Kangxi radical U+2F00)
-alias the normal glyph. All rebuilt fonts are repacked into the space the original CJK fonts
-occupied and the font registry is repointed.
+alias the normal glyph. Lyrics draw Latin and symbols from Podium Sans 16, which build_latin.py
+redraws from Fusion Pixel as well. All rebuilt fonts are repacked into the space the original CJK
+fonts and Podium Sans 16 occupied and the font registry is repointed.
 
 usage: build_unified.py <stock Firmware-25.6.3> <output> <fusion bdf dir> [extra chars file]
 """
@@ -20,6 +21,7 @@ import sys
 import unicodedata
 
 sys.path.insert(0, __file__.rsplit('/', 1)[0])
+import build_latin  # noqa: E402
 from bdf import load, to_image  # noqa: E402
 from pixofont import scan, subset  # noqa: E402
 
@@ -40,8 +42,9 @@ FAMILY_HAN_OFFSET = {'AppleLiGothicMedium': 0, 'Hei': 0, 'AppleGothic': 1, 'Osak
 def is_target(cp):
     return (0x2E80 <= cp <= 0x2FDF or 0x3000 <= cp <= 0x30FF or 0x3100 <= cp <= 0x318F
             or 0x31A0 <= cp <= 0x31BF
-            or 0x31F0 <= cp <= 0x31FF or 0x3400 <= cp <= 0x9FFF or 0xAC00 <= cp <= 0xD7AF
-            or 0xF900 <= cp <= 0xFAFF or 0xFF01 <= cp <= 0xFF60 or 0xFFE0 <= cp <= 0xFFE6)
+            or 0x31F0 <= cp <= 0x33FF or 0x3400 <= cp <= 0x9FFF or 0xAC00 <= cp <= 0xD7AF
+            or 0xF900 <= cp <= 0xFAFF or 0xFE30 <= cp <= 0xFE6F or 0xFF01 <= cp <= 0xFF60
+            or 0xFFE0 <= cp <= 0xFFE6)
 
 
 def charset(codec, lead, trail):
@@ -96,8 +99,8 @@ def main(src, dst, fusion_dir, extra_chars=None):
 
     covered = {c for f in ranged for c in f.codepoints()}
     wanted = {c for c in covered | gb | big5 | jis | ksc if is_target(c)}
-    if extra_chars:
-        wanted |= {ord(c) for c in open(extra_chars, encoding='utf-8').read() if is_target(ord(c))}
+    extra = {ord(c) for c in open(extra_chars, encoding='utf-8').read().strip()} if extra_chars else set()
+    wanted |= {cp for cp in extra if is_target(cp)}
 
     # decide each wanted char: alias / Fusion image / leave in old font
     from PIL import Image
@@ -180,13 +183,17 @@ def main(src, dst, fusion_dir, extra_chars=None):
         else:
             blob, h2 = subset(f, lambda cp: cp not in unified)
         built.append((f, blob, h2))
+    # Latin and symbols: lyrics draw them from Podium Sans 16, redrawn from Fusion Pixel too
+    latin = next(f for f in fonts if build_latin.is_target_font(f))
+    built.append((latin, *build_latin.rebuild(fonts, fusion_dir, is_target,
+                                               {cp for cp in extra if not is_target(cp)})))
     for f, blob, _h2 in built:  # hard limit check on the rebuilt strips
         g = scan(blob, 0, len(blob))[0]
         assert g.row_pixels <= STRIP_LIMIT, f'{f.name}: strip {g.row_pixels}px exceeds {STRIP_LIMIT}'
     print('fonts holding unified glyphs:', ', '.join(f'{n}({len(extras[n])})' for n in hosts if extras[n]))
 
-    # repack every rebuilt font into the contiguous regions the ranged fonts occupied
-    spans = sorted((f.off, f.end) for f in ranged)
+    # repack every rebuilt font into the contiguous regions the ranged fonts and Podium Sans occupied
+    spans = sorted((f.off, f.end) for f, _b, _h in built)
     regions = []
     for a, b in spans:
         if regions and regions[-1][1] == a:

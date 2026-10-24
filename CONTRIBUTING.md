@@ -53,6 +53,7 @@ setup:
 | Firmware directory at `0x4200`, osos data at `0x5000` | `tools/ipodfw.py`, `tools/build_unified.py` | `build_unified.py` asserts the osos layout |
 | Font registry address `0x6a6480–0x6a6660` | `REGISTRY` in `tools/build_unified.py`, `tools/render_preview.py` | Version-specific; ideally found by searching instead of hardcoded |
 | 12px CJK font families (AppleGothic, AppleLiGothicMedium, Hei, Osaka) | `FAMILIES` in `tools/build_unified.py` | List them on your firmware with `tools/pixofont.py <firmware>` |
+| Lyrics' Latin/symbol font Podium Sans 16, bottom-aligned with the 12px fonts | `TARGET` in `tools/build_latin.py`, `tools/render_preview.py` | Found from an on-device photo; check yours the same way |
 | Glyph strip limit 31836px | `STRIP_LIMIT` in `tools/build_unified.py` | Measured on 1.3; likely the same on other 5G firmware |
 | Menu font `/Resources/Fonts/CJK.ttf` (18px EBDT) | `tools/build.py`, `tools/extend_cjk_ttf.py` | |
 | Partition layout: firmware on `s2`, music on `s3` (Mac-formatted) | `tools/backup_and_flash.sh` | Windows-formatted iPods use an MBR layout |

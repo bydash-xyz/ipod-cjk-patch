@@ -3,8 +3,9 @@
 usage: make_test_track.py <file.m4a>
 Make the silent track first, e.g.:
     ffmpeg -f lavfi -i anullsrc=r=44100:cl=stereo -t 20 -c:a aac ipod-cjk-test.m4a
-Title/artist/album test the menus (CJK.ttf); lyrics test the 12px bitmap fonts. On the patched
-firmware every CJK char in the lyrics should sit on one baseline in one style.
+Title/artist/album test the menus (CJK.ttf); lyrics test the bitmap fonts. On the patched
+firmware every char in the lyrics, Latin and symbols included, should sit on one baseline in one
+style.
 """
 import sys
 
@@ -25,7 +26,9 @@ LYRICS = '\n'.join([
     '[新增] 嘢 哋 嘅 瞓 嫲 阇 坔',               # Cantonese / rare chars added
     '[部首] 花⼀样的年纪 ⼩ ⾸ ⻋',              # radical codepoints aliased to 一 小 首 车
     '[한국어] 사랑해요 我爱你',                  # Hangul next to Han
-    '[混合] Yasushi Nishino（西野靖）：吉他',      # Latin (Podium Sans) + fullwidth punctuation
+    '[混合] Yasushi Nishino（西野靖）：吉他',      # Latin (Podium Sans 16) + fullwidth punctuation
+    '[English] Love Story (feat. 周杰伦) “Don’t cry”',  # stock: bold Latin next to thin CJK
+    '[符号] ♪ ♫ ★ ① → ※ ㈱ ㎏ ﹏',               # symbols: one font each, ♫ added
 ])
 
 

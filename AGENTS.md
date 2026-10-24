@@ -58,6 +58,9 @@ These are learned the hard way (see "Firmware notes" in the README); code must k
   past 32767px every later glyph renders blank). `build_unified.py` asserts it.
 - Every CJK character must live in exactly one 12px font. The firmware's fallback order is not
   the registry order, so two sources means unpredictable style and baseline.
+- Lyrics draw Latin and symbols from Podium Sans 16 first, and the firmware aligns mixed fonts by
+  the bottom of their glyph cells. `build_latin.py` keeps that font's header and places Fusion
+  glyphs for that alignment; don't move it to another font or cell height without a device photo.
 - Rebuilt fonts must fit back into the space the original CJK fonts occupied in `osos`, and the
   font registry entries are repointed, not added.
 - After changing an image, recompute its checksum (`ipodfw.fix_checksum`).

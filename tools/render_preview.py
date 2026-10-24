@@ -1,10 +1,11 @@
 """Render a before/after image of CJK text from two firmware files' own fonts.
 
-Lyrics are drawn with the 12px bitmap fonts in the osos image. Each char takes the first font in
-the firmware's font registry that has it, on a shared baseline. This models stock behaviour; the
-real stock lookup order is not exactly registry order, but on the patched firmware every CJK char
-has one source, so order doesn't matter there. Menu text is drawn from CJK.ttf's 18px strike,
-with chars it lacks falling back to the 12px bitmap fonts, as on the device.
+Lyrics are drawn with the bitmap fonts in the osos image, as on the device: Podium Sans 16 if it
+has the char (Latin and symbols), else the first 12px font in the firmware's font registry that
+has it, with the glyph cells of different fonts aligned at the bottom. This models stock
+behaviour; the real stock lookup order for CJK is not exactly registry order, but on the patched
+firmware every CJK char has one source, so order doesn't matter there. Menu text is drawn from
+CJK.ttf's 18px strike, with chars it lacks falling back to the bitmap fonts, as on the device.
 
 usage: render_preview.py <stock firmware> <patched firmware> <out.png>
 """
@@ -28,6 +29,8 @@ LYRICS = [
     '夕暮れが僕のドアをノックする',
     '사랑해요 我爱你',
     '(合)嗨啊啰哩 嘢 哋 嘅',
+    'Love Story (feat. 周杰伦) ♪',
+    '“Don’t cry,” 她说 ★ ① → 再见!',
 ]
 MENU = ['汪苏泷 - 达达乐队', '犸嫫恓 字体测试']
 SCALE = 3
@@ -42,20 +45,23 @@ class Firmware:
         def pos(f):
             return next((o for o in range(*REGISTRY, 4)
                          if struct.unpack_from('<II', fw, o) == (f.off - a, f.h2_off - a)), None)
-        fonts = [(pos(f), f) for f in scan(fw, a, b) if f.size == 12]
-        self.fonts = [f for p, f in sorted((p, f) for p, f in fonts if p is not None)]
+        fonts = [(pos(f), f) for f in scan(fw, a, b)]
+        self.fonts = [f for p, f in sorted((p, f) for p, f in fonts if p is not None)
+                      if f.size == 12 or (f.name, f.size) == ('Podium Sans', 16)]
+        self.fonts.sort(key=lambda f: f.size == 12)  # stable: Podium Sans 16 first
         ttf = TTFont(io.BytesIO(read_file(fw, '/Resources/Fonts/CJK.ttf')))
         self.cmap = ttf.getBestCmap()
         self.strike = ttf['EBDT'].strikeData[0]
 
     def bitmap_glyph(self, ch):
-        """(image, advance, x offset, rows above baseline) from the first 12px font with `ch`."""
+        """(image, advance, x offset, rows above baseline) from the first bitmap font with `ch`.
+        Cells are bottom-aligned; a 15px Hei cell has 12 rows above the baseline."""
         f = next((f for f in self.fonts if f.char_index(ord(ch)) is not None), None)
         g = f and f.glyph(ord(ch))
         if not g:
             return None
         img, width, ident = g
-        return img, width, ident, f.height - f.descent
+        return img, width, ident, f.height - 3
 
     def ttf_glyph(self, ch):
         """(image, advance, x offset, rows above baseline) from CJK.ttf's 18px 4-bit strike."""
@@ -102,7 +108,7 @@ def main(stock_path, patched_path, out):
         def menu_glyph(ch, fw=fw):
             return fw.ttf_glyph(ch) or fw.bitmap_glyph(ch)
         rows = [draw_line(t, menu_glyph, 17, 22) for t in MENU] + [None]
-        rows += [draw_line(t, fw.bitmap_glyph, 12, 17, guide=True) for t in LYRICS]
+        rows += [draw_line(t, fw.bitmap_glyph, 14, 19, guide=True) for t in LYRICS]
         columns.append((label, rows))
 
     pad, gap, title_h, section_h = 16, 32, 28, 20

@@ -9,14 +9,16 @@ Apple's stock firmware **1.3** (`iPod_25.1.3.ipsw`). It isn't Rockbox: the Apple
 working as before and only its fonts change. Your music stays on the iPod.
 
 On stock firmware, CJK lyrics mix four bitmap font families. Characters jump up and down by
-1–2px, styles change mid-line, and some characters (啰, 嘢, 哋, …) are blank. Menu text
+1–2px, styles change mid-line, and some characters (啰, 嘢, 哋, …) are blank. Latin letters and
+symbols in the same lines come from yet another font, a bold antialiased one. Menu text
 (song, artist and album names) is missing many Simplified Chinese characters (泷, 犸, …).
 
 ![Stock vs patched: menu and lyric text rendered from each firmware's own fonts](docs/before-after.png)
 
 <sub>Rendered from each firmware's own font data by `tools/render_preview.py` (3× scale). On
-stock, each character takes the first font in the firmware's font registry that has it. The
-device's real lookup order differs slightly, but the mix of fonts is the same.</sub>
+stock, each character takes Podium Sans 16 if it has it, else the first 12px font in the firmware's
+font registry that has it. The device's real lookup order for CJK differs slightly, but the mix of
+fonts is the same.</sub>
 
 > **Use at your own risk.** This writes to your iPod's firmware partition. The flash script
 > checks everything it can and makes a backup first, and a restore in Finder/iTunes always
@@ -31,6 +33,13 @@ device's real lookup order differs slightly, but the mix of fonts is the same.</
   font-fallback order no longer matters. Simplified characters use the zh_hans glyphs, Traditional
   ones zh_hant, Japanese-only kanji and kana ja, and Hangul ko. Characters missing from stock are
   added, and Kangxi radical lookalikes (⼀ ⼩ ⾸ ⻋) alias to the normal characters.
+- **Latin and symbols in lyrics (Podium Sans 16, also in the OS image).** Lyrics draw everything
+  that isn't CJK from this bold, antialiased font, so English words, brackets and quotes looked
+  heavier than the CJK beside them. Its glyphs are redrawn from Fusion Pixel 12px proportional,
+  on the same baseline as the CJK. Symbols that stock only has in the CJK fonts (♪ ★ ① → ※, box
+  drawing) move into it too, so each has one style. Characters Fusion Pixel lacks (Vietnamese
+  and other rare accented letters, Apple's private icons) keep their stock glyphs. Podium Sans 16
+  may also be used outside the lyrics screen; any text there changes the same way.
 - **Menus / Now Playing (`CJK.ttf`, 18px 4-bit, in the resource volume).** 630 glyphs are
   added: all of GB2312 that was missing, plus characters from `charsets/menu.txt`. They are
   rasterized from Hiragino Sans GB W6 to match the existing Hiragino glyphs.
@@ -57,12 +66,13 @@ HTTP, so the hashes are what make it safe. If you already have the IPSW, pass
 `--ipsw path/to/iPod_25.1.3.ipsw` to skip the download.
 
 The lyric glyphs come from the Fusion Pixel 12px BDF release (v2026.09.25) on GitHub. The build
-also downloads that file, checks it against a pinned SHA256, and caches it in `build/`.
+also downloads that file and the proportional one (for Latin and symbols), checks them against
+pinned SHA256s, and caches them in `build/`.
 
 The build writes `build/Firmware-25.6.3-cjk`, the stock base `build/stock/Firmware-25.6.3`, and
 `build/before-after.png`. It's deterministic, and the script tells you whether your output
 matches the released build (SHA256
-`4ac3e2e1b8e3e14ce3078d0fe3f0a8c9641e04f65228a552ad5038c37c3260a9`).
+`bf83fc2e3c38ba82da93f4f058783bfe9ef38899f6eb6dbf93fae567239b97e8`).
 
 ## Flash (keeps music)
 
@@ -98,7 +108,7 @@ A restore in Finder/iTunes also works, but it erases the music.
 ## Adding characters
 
 Append characters to `charsets/lyrics_extra.txt` (lyrics) or `charsets/menu.txt` (menus) and
-rebuild. To find characters your library uses that a firmware can't draw well:
+rebuild. In `lyrics_extra.txt`, symbols that aren't CJK (such as ♫) are added to Podium Sans 16. To find characters your library uses that a firmware can't draw well:
 
 ```bash
 uv run python -I tools/scan_library.py ~/Music/your-library build/Firmware-25.6.3-cjk report.json
@@ -116,6 +126,7 @@ that exercise every case. Add the track to your library and check it on the iPod
 |---|---|
 | `tools/build.py` | One-step build: download + verify the IPSW, build, render preview |
 | `tools/build_unified.py` | Rebuilds the 12px CJK bitmap fonts in the `osos` image |
+| `tools/build_latin.py` | Redraws Podium Sans 16 (lyrics' Latin and symbols) from Fusion Pixel |
 | `tools/extend_cjk_ttf.py` | Appends glyphs to `CJK.ttf`'s 18px EBDT strike |
 | `tools/build_rsrc.py` | Replaces a file in the `rsrc` FAT volume and fixes its checksum |
 | `tools/install_firmware.py` | Patches the device's firmware partition in place (stdlib only) |
@@ -135,6 +146,10 @@ that exercise every case. Add the track to your library and check it on the iPod
   `build_unified.py` enforces that, which allows about 2,400 glyphs per font.
 - Don't rely on the firmware's font-fallback order. It doesn't follow the font registry order.
   Give each character exactly one source font.
+- Lyrics are drawn with Podium Sans 16 first; only characters it lacks fall back to the 12px
+  fonts. Glyphs from different fonts on one line are aligned by the bottom of their cells, not by
+  their declared ascent (measured from a photo: Podium Sans 16's 13px parentheses end on the same
+  row as the CJK).
 - The bitmap font format follows iPodWizard's `Font.h`.
 
 ## Help wanted: more iPods and firmware versions

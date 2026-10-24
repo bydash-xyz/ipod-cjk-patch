@@ -202,9 +202,10 @@ def subset(f, keep, shift=None, extra=None):
 
     shift(cp) -> dy moves that char's glyph down by dy rows (glyphs shared by several chars
     take the shift of the first one).
-    extra: {cp: ('alias', target_cp) | ('image', PIL 'L' image f.size x f.height, 255 = ink)}
+    extra: {cp: ('alias', target_cp) | ('image', PIL 'L' image f.size x f.height, 255 = ink)
+                | ('glyph', (PIL 'L' image w x f.height or None, advance, x offset))}
     adds characters -- an alias reuses the glyph of a kept char in this font; images need a
-    fixed-width font."""
+    fixed-width font, glyphs a variable-width one (None draws nothing, e.g. a space)."""
     extra = extra or {}
     glyph_new = {}   # source key -> new glyph index
     order = []       # new glyph index -> ('orig', g, dy) | ('image', im)
@@ -224,6 +225,11 @@ def subset(f, keep, shift=None, extra=None):
             assert f.fixed and src.size == (f.size, f.height), f'{f.name}: bad image for U+{cp:04X}'
             chars[cp] = len(order)
             order.append(('image', src))
+        elif kind == 'glyph':
+            img, advance, ident = src
+            assert not f.fixed and (img is None or img.height == f.height), f'{f.name}: bad glyph U+{cp:04X}'
+            chars[cp] = len(order)
+            order.append(('glyph', img, advance, ident))
     for cp, (kind, src) in sorted(extra.items()):  # aliases after images so targets exist
         if kind == 'alias':
             assert src in chars, f'{f.name}: alias target U+{src:04X} not in font'
@@ -240,7 +246,8 @@ def subset(f, keep, shift=None, extra=None):
         else:
             groups.append([cp, len(charmap) + 1, 1])
         charmap.append(chars[cp])
-    widths = [f.size if (f.fixed or o[0] == 'image') else f.metrics[o[1]][1] - f.metrics[o[1]][0]
+    widths = [(o[1].width if o[1] else 0) if o[0] == 'glyph'
+              else f.size if (f.fixed or o[0] == 'image') else f.metrics[o[1]][1] - f.metrics[o[1]][0]
               for o in order]
     total = sum(widths)
     per = 8 // f.depth
@@ -254,12 +261,14 @@ def subset(f, keep, shift=None, extra=None):
 
     x = 0
     for o, w in zip(order, widths):
-        if o[0] == 'image':
-            px = o[1].load()
+        if o[0] in ('image', 'glyph'):
+            px = o[1].load() if w else None
             for X in range(w):
                 for y in range(f.height):
                     if px[X, y]:
                         put(x + X, y, px[X, y] * maxv // 255)
+            if o[0] == 'glyph':
+                metrics.append((x, x + w, o[2], o[3]))
         else:
             _k, g, dy = o
             o1 = g * f.size if f.fixed else f.metrics[g][0]
